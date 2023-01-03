@@ -1,6 +1,7 @@
 const BlogModel = require('../models/blogModel')
 const AuthorModel = require('../models/authorModel')
-const { default: mongoose } = require('mongoose')
+const mongoose = require('mongoose')
+
 
 
 
@@ -25,52 +26,78 @@ const blogs = async (req, res) => {
 
 }
 
+
+// Get Api
+
 const getBlogs = async (req, res) => {
+      try {
+            let data = req.query
 
-      let data = req.query
-      let filter = { isDeleted: false, isPublished: true }
+            let filter = { isDeleted: false, isPublished: true }
 
-      const { category, subcategory, tags, authorId } = data
+            const { category, subcategory, tags, authorId } = data
 
-      if (category) {
-            let verifyCategory = await BlogModel.findOne({ category: category })
-            if (!verifyCategory) {
+            if (category) {
+                  let verifyCategory = await BlogModel.findOne({ category: category })
+                  if (!verifyCategory) {
+                        return res
+                              .status(404)
+                              .send({ status: false, msg: "No blogs in this category" })
+                  }
+            }
+            if (subcategory) {
+                  let verifySubCategory = await BlogModel.findOne({ subcategory: subcategory })
+                  if (!verifySubCategory) {
+                        return res
+                              .status(404)
+                              .send({ status: false, msg: "No blogs in this subcategory" })
+                  }
+            }
+            if (tags) {
+                  let verifyTags = await BlogModel.findOne({ tags: tags }) // it can't return after 0th index 
+                  if (!verifyTags) {
+                        return res
+                              .status(404)
+                              .send({ status: false, msg: "No blogs in this tags" })
+                  }
+            }
+            if (authorId) {
+                  let validAuthorId = mongoose.Types.ObjectId(authorId)
+                  if (validAuthorId == false) {
+                        return res
+                              .status(400)
+                              .send({ status: false, message: "Invalid length of authorId" })
+                  }
+
+                  let verifyAuthorId = await BlogModel.findOne({ authorId: authorId })
+                  if (!verifyAuthorId) {
+                        return res
+                              .status(400)
+                              .send({ status: false, message: "No blogs with this authorId exists" })
+                  }
+            }
+
+            filter = { ...data, ...filter }      // with rest operator and use like or operator
+
+            let getQueryData = await BlogModel.find(filter)
+
+            if (getQueryData.length == 0) {
                   return res
                         .status(404)
-                        .send({ status: false, msg: "No blogs in this category" })
+                        .send({ status: false, message: "No blogs found" })
             }
-      }
-      if (subcategory) {
-            let verifySubCategory = await BlogModel.findOne({ subcategory: subcategory })
-            if (!verifySubCategory) {
+            else {
                   return res
-                        .status(404)
-                        .send({ status: false, msg: "No blogs in this subcategory" })
+                        .status(200)
+                        .send({ status: true, message: getQueryData })
             }
       }
-      if (tags) {
-            let verifyTags = await BlogModel.findOne({ tags: tags })
-            if (!verifyTags) {
-                  return res
-                        .status(404)
-                        .send({ status: false, msg: "No blogs in this tags" })
-            }
+      catch (err) {
+            res.status(400).send({ status: false, error: err.message })
       }
-      if (authorId) {
-            let validAuthorId = mongoose.Types.ObjectId.validAuthorId(authorId)
-            if (validAuthorId == false) {
-                  return res
-                        .status(400)
-                        .send({ status: false, message: "Invalid length of authorId" })
-            }
-      }
-
-
 
 }
 
 
-
-
-
 module.exports.blogs = blogs
+module.exports.getBlogs = getBlogs

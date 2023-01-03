@@ -11,6 +11,7 @@ router.post("/authors", AuthorController.authors)
 
 router.post("/blogs", BlogController.blogs)
 
+router.get("/getBlogs", BlogController.getBlogs)
 
 router.put("/blogs/:blogId", async function(req,res){
    try{
@@ -61,12 +62,7 @@ router.put("/blogs/:blogId", async function(req,res){
    }
 })
 
-
-
-
-
-
-
+ 
 
 
 module.exports = router
