@@ -1,6 +1,7 @@
 const BlogModel = require('../models/blogModel')
 const AuthorModel = require('../models/authorModel')
 const mongoose = require('mongoose')
+const moment = require('moment')
 
 
 
@@ -126,5 +127,97 @@ const getBlogs = async (req, res) => {
 // Also make sure in the response you return the updated blog document.
 
 
+const putApi = async (req, res) => {
+      try {
+
+            let data = req.body
+            let date = moment().format()
+            // let filter = { isDeleted: false }
+            const {title, body, tags, subcategory} = data
+
+            let blogId = req.params.blogId
+            let dbdata = await BlogModel.findById({ _id: blogId })                // finding blog with the help of id in path params           
+            if (!dbdata) {                                      // if req.body has isdeleted key so create timestamps in dbdata                                                  
+                  return res
+                        .status(404)
+                        .send({ status: false, message: "invalid blogId" });
+            }
+            // if(dbdata.isDeleted == false){
+            //       if(dbdata.isPublished == false || dbdata.isPublished == true){
+
+            //       }
+            // }
+            if (Object.keys(data).length == 0) {
+                  return res
+                        .status(400)
+                        .send({ status: false, msg: "Body should not be Empty.. " })
+            }
+
+            let blog = await BlogModel.findOneAndUpdate({ _id: blogId},// isDeleted: false 
+                   {$set: { isPublished: true, body: body, title: title, publishedAt: date } ,
+                   $push: { tags: tags, subcategory: subcategory }} ,
+                  { new: true })
+
+                  res.status(200).send({status:true, msg:blog})
+
+      } catch (err) {
+            res.status(500).send({status:false, error:err.message})
+      }
+}
+
+      const updateBlog = async function (req, res) {
+            try {
+        
+                let data = req.body
+                let BlogId = req.params.blogId
+        
+        
+        
+                //------------------------- Destructuring Data from Body -------------------------//
+                let { title, body, tags, subcategory } = data
+        
+                //------------------------- Cheking Presence of BlogId -------------------------//
+                if (!BlogId) return res.status(404).send({ status: false, msg: "Please input id BlogId." });
+        
+                //------------------------- Fetching BlogID from DB -------------------------//
+                let checkBlogID = await BlogModel.findOne({ _id: BlogId })
+                if (!checkBlogID) return res.status(404).send({ status: false, msg: "Please input valid BlogId." })
+        
+        
+                //------------------------- Checking Required Field -------------------------//
+                if (!(title || body || tags || subcategory)) {
+                    return res.status(400).send({ status: false, message: "Mandatory fields are required." });
+                }
+        
+                //===================== Fetching Data with BlogId and Updating Document =====================//
+        
+                 // let blog = await BlogModel.findOneAndUpdate({ _id: blogId},// isDeleted: false 
+            //       { $set: { isPublished: true, body: body, title: title, publishedAt: date } },
+            //       { $push: { tags: tags, subcategory: subcategory } },
+            //       { new: true })
+
+                let blog = await BlogModel.findOneAndUpdate({ _id: BlogId }, {
+                    $push: { subcategory: subcategory, tags: tags },
+                    $set: { title: title, body: body, isPublished: true, publishedAt: Date.now() }
+                }, { new: true })
+        
+                if (!blog) return res.status(404).send({ status: false, msg: "Blog not found." })
+        
+                res.status(200).send({ status: true, msg: "Successfully Updated ", data: blog })
+        
+        
+        
+            } catch (error) {
+        
+                res.status(500).send({ error: error.message })
+            }
+        
+        }
+
+
+
+
 module.exports.blogs = blogs
 module.exports.getBlogs = getBlogs
+module.exports.updateBlog = updateBlog
+module.exports.putApi = putApi
