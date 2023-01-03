@@ -13,6 +13,12 @@ router.post("/blogs", BlogController.blogs)
 
 router.get("/getBlogs", BlogController.getBlogs)
 
+router.delete("/deleteBlog/:blogId",BlogController.deleteBlog)
+
+
+
+
+
 router.put("/blogs/:blogId", async function(req,res){
    try{
     let id = req.params.blogId

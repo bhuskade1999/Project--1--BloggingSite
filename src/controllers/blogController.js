@@ -99,5 +99,53 @@ const getBlogs = async (req, res) => {
 }
 
 
+
+//delete api using params
+
+const deleteBlog = async function (req,res) {
+ try{
+
+ let blogId = req.params.blogId
+    findData = await BlogModel.findOne({_id:blogId})
+    if(!findData){
+      return res.status(404).send({status:false,error:"please enter valid BlogId"})
+    }
+
+
+    if(findData.isDeleted == true){
+       return res.status(400).send({status:false, error:"document already deleted"})
+    }
+
+
+    deleteData =await BlogModel.findOneAndUpdate({_id:blogId},
+      {$set:{isDeleted:true}},{new:true})
+
+    return res.status(200).send({status:true,msg :deleteData})
+    
+      }
+      catch(err){
+            res.status(400).send({ status: false, error: err.message })
+      }
+}
+
+
+//delete Api using query parama
+
+const deleteBlog2=async function(req,res){
+      data = req.query
+      const{ category, authorid, tags, subcategory , unpublished} = data
+      
+      savedata =await BlogModel.find()
+}
+
+
+
+
+
+
+
+
+
+module.exports.deleteBlog = deleteBlog
 module.exports.blogs = blogs
 module.exports.getBlogs = getBlogs
