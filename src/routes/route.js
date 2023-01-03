@@ -29,10 +29,10 @@ router.put("/blogs/:blogId", async function(req,res){
         dbdata.deletedAt = Date.now()
         
     }
-        else if(data.isPublished){                              // if req.body has ispublished ket so create timestamps in dbdata
-        console.log(data.isPublished)
-        dbdata.publishedAt = Date.now()
-        console.log(dbdata)
+    else if(data.isPublished){                              // if req.body has ispublished ket so create timestamps in dbdata
+    console.log(data.isPublished)
+    dbdata.publishedAt = Date.now()
+    console.log(dbdata)
     }
     else if(data.tags||data.subcategory){                                    // if req.body has tags and subcategory  push below content in these dbdata  
         let tags = dbdata.tags
@@ -62,7 +62,62 @@ router.put("/blogs/:blogId", async function(req,res){
    }
 })
 
- 
+// DELETE /blogs?queryParams
+// Delete blog documents by category, authorid, tag name, subcategory name, unpublished
+// If the blog document doesn't exist then return an HTTP status of 404 with a body like this
 
+router.delete("/blogs", async function(req,res){
+   try{
+    const {authorId,tags,subcategory,isPublished} = req.query
+    
+    if (authorId) {
+        let validAuthorId = mongoose.Types.ObjectId(authorId)
+        if (validAuthorId == false) {
+              return res
+                    .status(400)
+                    .send({ status: false, message: "Invalid length of authorId" })
+        }
+
+        let verifyAuthorId = await BlogModel.findOne({ authorId: authorId })
+        if (!verifyAuthorId) {
+              return res
+                    .status(400)
+                    .send({ status: false, message: "No blogs with this authorId exists" })
+        }
+  }
+    if (tags) {
+        let verifyTags = await BlogModel.findOne({ tags: tags }) // it can't return after 0th index 
+            if (!verifyTags) {
+             return res
+                .status(404)
+                .send({ status: false, msg: "No blogs in this tags" })
+    }
+}
+
+    if (subcategory) {
+        let verifySubCategory = await BlogModel.findOne({ subcategory: subcategory })
+        if (!verifySubCategory) {
+              return res
+                    .status(404)
+                    .send({ status: false, msg: "No blogs in this subcategory" })
+        }
+}
+
+    if (isPublished) {
+        let Unpublished = await BlogModel.find({ isPublished : isPublished })
+        if (Unpublished) {
+              if(Unpublished.isPublished == true){return res.status(404).send({status : false, msg : "no data found"}) }
+            }else{
+                return res.status(404).send({status : false, msg : "isPublished not found"})
+            }
+}
+    let update = await BlogModel.updateMany( req.query,{$set : {isDeleted : false}},{new : true} )
+    res.status(200).send({status : true,  msg : "blog succesfully deleted"})
+}catch(err){
+    res.send({msg : err.message})
+}
+
+
+})
 
 module.exports = router
