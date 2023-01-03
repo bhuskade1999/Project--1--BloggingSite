@@ -2,7 +2,14 @@
 const AuthorModel = require('../models/authorModel')
 const Validation = require('../validations/validator')
 
+
+
+// Create an author - atleast 5 authors
+// Create a author document from request body. Endpoint: BASE_URL/authors
+
+
 const authors = async (req, res) => {
+      
       try {
             let data = req.body
 

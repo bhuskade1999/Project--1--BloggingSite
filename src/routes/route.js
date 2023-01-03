@@ -3,16 +3,16 @@ const { default: mongoose } = require("mongoose")
 const router = express.Router()
 const AuthorController = require('../controllers/authorController')
 const BlogController = require('../controllers/blogController')
-//paras addition
-const validObjectID = function(value){mongoose.Types.ObjectId.isValid(value)}
-const BlogModel = require("../models/blogModel")
+
+
 
 router.post("/authors", AuthorController.authors)
 
 router.post("/blogs", BlogController.blogs)
 
-router.get("/getBlogs", BlogController.getBlogs)
+router.get("/Blogs", BlogController.getBlogs)
 
+<<<<<<< HEAD
 router.put("/blogs/:blogId", async function(req,res){
    try{
     let id = req.params.blogId
@@ -61,6 +61,10 @@ router.put("/blogs/:blogId", async function(req,res){
      res.status(500).send({error : "error" , msg : "something went wrong" })
    }
 })
+=======
+router.put("/putBlogs/:blogId", BlogController.updateBlog)
+router.put("/putBlogss/:blogId", BlogController.putApi)
+>>>>>>> 5849113e25c12e1154f0a6b2c2b3766a4c7331f5
 
 // DELETE /blogs?queryParams
 // Delete blog documents by category, authorid, tag name, subcategory name, unpublished
