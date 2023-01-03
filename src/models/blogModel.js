@@ -7,9 +7,9 @@ const blogSchema = new mongoose.Schema({
             type: String,
             required: true
       },
-      body:{
-            type:String,
-            required:true
+      body: {
+            type: String,
+            required: true
       },
       authorId: {
             type: objectId,
@@ -17,21 +17,32 @@ const blogSchema = new mongoose.Schema({
       },
       tags: [String],
       category: {
-            type: String,
+            type: [String],
             required: true
+      },
+      subcategory: {
+            type:[String]
+      },
+      deletedAt:{
+            type:Date,
+            default:null
       },
       isDeleted: {
             type: Boolean,
             default: false
       },
-      isPublished:{
-            type:Boolean,
-            default:false
+      publishedAt:{
+            type:Date,
+            default:null
+      },
+      isPublished: {
+            type: Boolean,
+            default: false
       },
 
-      },{timestamps:true})
+}, { timestamps: true })
 
-      module.exports = mongoose.model("Blogs",blogSchema)
+module.exports = mongoose.model("Blogs", blogSchema)
 
 
 // title: {mandatory},
