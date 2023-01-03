@@ -9,14 +9,10 @@ router.post("/authors", AuthorController.authors)
 
 router.post("/blogs", BlogController.blogs)
 
+router.get("/getBlogs", BlogController.getBlogs)
 
 
-
-
-
-
-
-
+ 
 
 
 module.exports = router
