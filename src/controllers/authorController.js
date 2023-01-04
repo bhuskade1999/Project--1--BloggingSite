@@ -20,17 +20,17 @@ const authors = async (req, res) => {
 
             const { fName, lName, title, email, password } = data
 
-            if (!Validation.isValidNames(fName)) {
+            if (!Validation.isValid(fName)) {
                   return res.status(400).send({ status: false, msg: "first name is required" })
             }
 
-            if (!Validation.isValidNames(lName)) {
+            if (!Validation.isValid(lName)) {
                   return res
                         .status(400)
                         .send({ status: false, msg: "last name is required" })
             }
 
-            if (!Validation.isValidNames(title)) {
+            if (!Validation.isValid(title)) {
                   return res
                         .status(400)
                         .send({ status: false, msg: "title is required" })
@@ -60,6 +60,12 @@ const authors = async (req, res) => {
                   return res
                         .status(400)
                         .send({ status: false, msg: "password is required" })
+            }
+            //password case sensitive
+            if(!Validation.isValidPassword(password)) {
+                  return res
+                  .status(400)
+                  .send({ msg: "Minimum eight characters, at least one uppercase, one lowercase, one special character and one number" })
             }
 
             let savedData = await AuthorModel.create(data)
