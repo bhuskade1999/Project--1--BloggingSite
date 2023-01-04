@@ -1,5 +1,6 @@
 const BlogModel = require('../models/blogModel')
 const AuthorModel = require('../models/authorModel')
+const Validation = require('../validations/validator')
 const mongoose = require('mongoose')
 const moment = require('moment')
 
@@ -19,14 +20,34 @@ const moment = require('moment')
 const blogs = async (req, res) => {
 
       try {
-            let data = req.body
-            let authorId = data.authorId
-            if (!authorId) {
-                  return res.status(404).send({ Error: "AuthorId must be present" })
+            let { title, body, category, authorId } = req.body;
+
+            if (Object.keys(req.body).length < 1) {
+                  return res.status(400).send({ msg: "Insert Data : BAD REQUEST" })
             }
-            let savedAuthorId = await AuthorModel.findById(authorId)
-            if (!savedAuthorId) {
-                  return res.status(404).send({ Error: "authorId is inValid" })
+            if (!Validation.isValid(title)) {
+                  return res.status(400).send({ msg: "Enter Title" })
+            }
+
+            if (!Validation.isValid(body)) {
+                  return res.status(400).send({ msg: "Enter Body" })
+            }
+
+            if (!Validation.isValid(category)) {
+                  return res.status(400).send({ msg: "Enter Category" })
+            }
+
+            if (!authorId) {
+                  return res.status(400).send({ msg: "Enter  Author Id" })
+            }
+
+            if (authorId) {
+                  let validAuthorId = mongoose.Types.ObjectId(authorId)
+                  if (validAuthorId == false) {
+                        return res
+                              .status(400)
+                              .send({ status: false, message: "Invalid  authorId" })
+                  }
             }
             let savedData = await BlogModel.create(data)
             res.status(201).send({ status: true, msg: savedData })
@@ -87,7 +108,7 @@ const getBlogs = async (req, res) => {
                   if (validAuthorId == false) {
                         return res
                               .status(400)
-                              .send({ status: false, message: "Invalid length of authorId" })
+                              .send({ status: false, message: "Invalid  authorId" })
                   }
 
                   let verifyAuthorId = await BlogModel.findOne({ authorId: authorId })
@@ -199,25 +220,26 @@ const deleteBlogs1 = async function (req, res) {
 //delete Api using query parama
 
 const deleteBlogs2 = async (req, res) => {
- try{
-      let data = req.query
-      data.authorId = req.authorId
+      try {
+            let data = req.query
+            if (Object.keys(data).length < 1) {
+                  return res
+                        .status(400)
+                        .send({ status: false, msg: "query params is not given" })
+            }
+            let findBlogs = await BlogModel.find({ $and: [data, { isDeleted: false, isPublished: false }] })
+            if (findBlogs.length == 0) {
+                  return res
+                        .status(400)
+                        .send({ status: false, msg: "blog does not exist" })
+            }
 
-      let mandatory = {isDeleted:false,isPublished:false, ...data}
+            let deleted = await BlogModel.updateMany({ $and: [data, { isDeleted: false, isPublished: false }] },
+                  { isDeleted: true, deletedAt: Date.now() }, { new: true })
 
-      let findBlogs = await BlogModel.find(mandatory)
-      if(findBlogs.length === 0){
-            return res
-            .status(400)
-            .send({ status: false, msg: "No such blog found to delete." })
+            res.status(200).send({ status: true, msg: "deleted successfully", data: deleted })
       }
-
-      let deleted = await BlogModel.updateMany(mandatory, 
-            {isDeleted:true, deletedAt:Date.now()}, {new:true})
-
-            res.status(200).send({status:true, msg:"deleted successfully", data:deleted})
-      }
-      catch (err){
+      catch (err) {
             return res.status(500).send({ status: false, msg: err.message })
       }
 

@@ -61,3 +61,11 @@
 
  module.exports.middle1 = middle1
  module.exports.middle2 = middle2
+ 
+
+
+
+
+
+ 
+ module.exports.validAuth = validAuth
