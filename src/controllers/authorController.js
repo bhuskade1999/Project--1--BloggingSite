@@ -1,7 +1,7 @@
 
 const AuthorModel = require('../models/authorModel')
 const Validation = require('../validations/validator')
-
+const jwt = require('jsonwebtoken')
 
 
 // Create an author - atleast 5 authors
@@ -71,4 +71,41 @@ const authors = async (req, res) => {
 
 }
 
+
+// ------------------ login user --------------------------
+
+const login = async function(req,res){
+try{
+
+
+      let userId = req.body.userId
+      let password = req.body.password
+
+      if (Object.keys(req.body).length == 0) {
+            return res.status(400).send({ status: false, msg: "emailId or Password is required" })
+      }
+
+      if(!userId){
+         return res.send({msg:"userId Must Be Present"})
+     }
+
+      if(!password){
+      return res.send({msg:"Password Must Be Present"})
+     }
+ 
+      let checkUser = await AuthorModel.findOne({email:userId,password:password})
+      if(!checkUser){
+            res.status(404).send({status:false,error:"User Not Found"})
+      }
+       let token = jwt.sign({userId:checkUser._id.toString()},"functionup")
+      
+       res.status(200).send({status:true,msg:token})     
+      }
+      catch(err){
+            res.status(404).send({status:false,err:err.message})
+      }
+}
+ 
+
+module.exports.login = login
 module.exports.authors = authors
