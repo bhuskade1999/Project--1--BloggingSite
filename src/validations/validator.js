@@ -23,7 +23,7 @@ const isValidEmail = (value) => { //Sanhilrai143@gmail.com.org
 
 
 const isValidPassword = (value) => {
-      const passRegex = /^(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z0-9]{7,}$/
+      const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/
       return passRegex.test(value)
 }
 

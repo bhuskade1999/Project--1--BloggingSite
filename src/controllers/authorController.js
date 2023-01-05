@@ -84,7 +84,7 @@ const login = async function(req,res){
 try{
 
 
-      let userId = req.body.userId
+      let userId = req.body.email
       let password = req.body.password
 
       if (Object.keys(req.body).length == 0) {

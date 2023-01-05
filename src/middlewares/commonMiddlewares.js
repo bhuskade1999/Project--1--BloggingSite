@@ -1,71 +1,53 @@
- const AuthorModel = require('../models/authorModel')
- const BlogModel = require('../models/blogModel')
- const jwt = require('jsonwebtoken')
+const AuthorModel = require('../models/authorModel')
+const BlogModel = require('../models/blogModel')
+const mongoose = require('mongoose')
+const jwt = require('jsonwebtoken')
 
 
- const middle1 = async (req,res,next) => {
-
-      let data = req.body
-      let authorId = data.authorId
-      const header = req.headers["x-api-key"]
-
-      if(!header){
-          res.status(400).send({status :false , msg : "token is mandatory in header"})
+const authentication = function (req, res, next) {
+      try {
+            let token = req.headers["x-api-key"];
+            if (!token) {
+                  return res.status(400).send({ status: false, Error: "authentication error" })
+            }
+            try {
+                  let decodedToken = jwt.verify(token, "functionup")
+                  req.headers["loggedUserId"] = decodedToken.userId
+                  
+                  next();
+            }
+            catch (err) {
+                  return res.status(400).send({ status: false, msg: "invalid token" })
+            }
       }
-      let decode = jwt.verify(header,"functionup")
-      
-      if (!decode){
-          res.status(401).send({status : false, msg: "token is invalid"})
+      catch (err) {
+            return res.status(500).send({ status: false, msg: err.message })
       }
+}
 
-      let tokenId = decode.userId  
-      if(authorId !== tokenId){
-            return res.status(401).send({status:false,msg:"unathorised user"})
+const authorization = async function (req, res, next) {
+      loggedUserId = req.headers["loggedUserId"]
+      if (Object.keys(req.params).length != 0) {
+            let blogsData = await BlogModel.findOne({ _id: req.params.blogsId })
+            let authorId = blogsData.authorId
+            if (authorId != loggedUserId) {
+                  return res.status(403).send({ status: false, msg: "you are not authorized" })
+            }
       }
-      next()
-
-
- }
- const middle2 = async (req,res,next) => {
-
-      
-      let blogId = req.params.blogId
-      const token = req.headers["x-api-key"]
-
-      if(!token){
-          res.status(400).send({status :false , msg : "token is mandatory in header"})
+      if (req.query.authorId) {
+            if (req.query.authorId != loggedUserId) {
+                  return res.status(403).send({ status: false, msg: req.query.authorId })
+            }
       }
-      let decoded = jwt.verify(token,"functionup")
-      
-      if (!decoded){
-          res.status(401).send({status : false, msg: "token is invalid"})
-      }
-      let tokenId = decoded.userId  
-       
-      let details = await  BlogModel.findOne({_id:blogId})
-      let authorsId = details.authorId
-
-      if(authorsId !== tokenId){
-            return res.status(401).send({status:false,msg:"unathorised user"})
-      }
-
-
-      next()
-
-
- }
+      next();
+}
 
 
 
 
 
- module.exports.middle1 = middle1
- module.exports.middle2 = middle2
- 
+module.exports.authentication = authentication;
+module.exports.authorization = authorization;
 
 
 
-
-
- 
- module.exports.validAuth = validAuth

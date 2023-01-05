@@ -1,7 +1,9 @@
 const BlogModel = require('../models/blogModel')
 const AuthorModel = require('../models/authorModel')
 const Validation = require('../validations/validator')
+
 const mongoose = require('mongoose')
+const ObjectId = mongoose.Schema.Types.ObjectId
 const moment = require('moment')
 
 
@@ -20,7 +22,9 @@ const moment = require('moment')
 const blogs = async (req, res) => {
 
       try {
-            let { title, body, category, authorId } = req.body;
+            let data = req.body
+            let { title, body, category, authorId } =data;
+            console.log(authorId)
 
             if (Object.keys(req.body).length < 1) {
                   return res.status(400).send({ msg: "Insert Data : BAD REQUEST" })
@@ -55,7 +59,7 @@ const blogs = async (req, res) => {
       catch (err) {
             res.status(400).send({ msg: "authorId is inValid", error: err.message })
       }
-
+      
 
 }
 
@@ -154,7 +158,7 @@ const updateBlogs = async (req, res) => {
             let data = req.body
             let date = moment().format()
 
-            const { title, body, tags, subcategory } = data
+            const { title, body, category, tags, subcategory } = data
 
             let blogId = req.params.blogId
             let dbdata = await BlogModel.findById({ _id: blogId })
@@ -221,28 +225,64 @@ const deleteBlogs1 = async function (req, res) {
 
 const deleteBlogs2 = async (req, res) => {
       try {
-            let data = req.query
-            if (Object.keys(data).length < 1) {
-                  return res
-                        .status(400)
-                        .send({ status: false, msg: "query params is not given" })
+            let loggedUserId=req.headers["loggedUserId"]
+            const { category, authorId, tags, subcategory, isPublished } = req.query;
+            if (category) {
+                let deletedData = await BlogModel.updateMany({ category: category, isDeleted: false,authorId:loggedUserId }, { isDeleted: true });
+                if (deletedData.modifiedCount != 0) {
+                    return res.status(200).send({ status: true, msg: "deleted successfully" })
+                }
             }
-            let findBlogs = await BlogModel.find({ $and: [data, { isDeleted: false, isPublished: false }] })
-            if (findBlogs.length == 0) {
-                  return res
-                        .status(400)
-                        .send({ status: false, msg: "blog does not exist" })
+            if (authorId) {
+                if (!ObjectId.isValid(authorId)) {
+                    return res.status(400).send({ status: false, msg: "invalid author id" })
+                }
+                let deletedData = await BlogModel.updateMany({ authorId: authorId, isDeleted: false, }, { isDeleted: true });
+                if (deletedData.modifiedCount != 0) {
+                    return res.status(200).send({ status: true, msg: "deleted successfully" })
+                }
             }
-
-            let deleted = await BlogModel.updateMany({ $and: [data, { isDeleted: false, isPublished: false }] },
-                  { isDeleted: true, deletedAt: Date.now() }, { new: true })
-
-            res.status(200).send({ status: true, msg: "deleted successfully", data: deleted })
-      }
-      catch (err) {
-            return res.status(500).send({ status: false, msg: err.message })
-      }
-
+            if (tags) {
+                let findedData = await BlogModel.find({ isDeleted: false });
+                let filteredData = findedData.filter((doc) => {
+                    let alltag = doc.tags;
+                    return alltag.find(tag => tag == tags)
+                })
+                let idArr = [];
+                filteredData.forEach(doc => {
+                    idArr.push(doc._id)
+                })
+                let deletedData = await BlogModel.updateMany({ _id: { $in: idArr },authorId:loggedUserId }, { isDeleted: true })
+                if (deletedData.modifiedCount != 0) {
+                    return res.status(200).send({ status: true, msg: "deleted successfully" })
+                }
+            }
+            if (subcategory) {
+                let findedData = await BlogModel.find({ isDeleted: false });
+                let filteredData = findedData.filter((doc) => {
+                    let alltag = doc.subcategory;
+                    return alltag.find(subcat => subcat == subcategory)
+                })
+                let idArr = [];
+                filteredData.forEach(doc => {
+                    idArr.push(doc._id)
+                })
+                let deletedData = await BlogModel.updateMany({ _id: { $in: idArr },authorId:loggedUserId}, { isDeleted: true })
+                if (deletedData.modifiedCount != 0) {
+                    return res.status(200).send({ status: true, msg: "deleted successfully" })
+                }
+            }
+            if (isPublished) {
+                let deletedData = await BlogModel.updateMany({ isPublished: isPublished, isDeleted: false,authorId:loggedUserId}, { isDeleted: true });
+                if (deletedData.modifiedCount != 0) {
+                    return res.status(200).send({ status: true, msg: "deleted successfully" })
+                }
+            }
+            return res.status(404).send({ status: false, msg: "no data is found to be deleted" })
+        }
+        catch(err){
+            res.status(500).send({status:false,msg:err.message})
+        }
 
 }
 
