@@ -17,7 +17,6 @@ router.delete("/Blogs/:blogId",Middleware.authentication, Middleware.authorizati
 
 router.delete("/Blogs",Middleware.authentication, Middleware.authorization, BlogController.deleteBlog2)
 
-//-----------------------------------------
 
 router.post("/login",AuthorController.login)
 
