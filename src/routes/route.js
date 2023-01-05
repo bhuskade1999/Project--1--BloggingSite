@@ -13,7 +13,7 @@ router.get("/Blogs",Middleware.authentication, BlogController.getBlogs)
 
 router.put("/Blogs/:blogId",Middleware.authentication, Middleware.authorization, BlogController.updateBlogs)
 
-router.delete("/deleteBlog/:blogId",Middleware.authentication, Middleware.authorization, BlogController.deleteBlog)
+router.delete("/Blogs/:blogId",Middleware.authentication, Middleware.authorization, BlogController.deleteBlog)
 
 router.delete("/Blogs",Middleware.authentication, Middleware.authorization, BlogController.deleteBlog2)
 

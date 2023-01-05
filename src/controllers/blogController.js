@@ -23,7 +23,7 @@ const blogs = async (req, res) => {
 
       try {
             let data = req.body
-            let { title, body, category, authorId } =data;
+            let { title, body, category, authorId } = data;
             console.log(authorId)
 
             if (Object.keys(req.body).length < 1) {
@@ -59,7 +59,7 @@ const blogs = async (req, res) => {
       catch (err) {
             res.status(400).send({ msg: "authorId is inValid", error: err.message })
       }
-      
+
 
 }
 
@@ -126,6 +126,7 @@ const getBlogs = async (req, res) => {
             filter = { ...data, ...filter }      // with rest operator and use like or operator
 
             let getQueryData = await BlogModel.find(filter)
+            let count = await BlogModel.find(filter).count()
 
             if (getQueryData.length == 0) {
                   return res
@@ -135,7 +136,7 @@ const getBlogs = async (req, res) => {
             else {
                   return res
                         .status(200)
-                        .send({ status: true, message: getQueryData })
+                        .send({ status: true,count:count ,message: getQueryData })
             }
       }
       catch (err) {
@@ -146,7 +147,7 @@ const getBlogs = async (req, res) => {
 
 // PUT /blogs/:blogId
 // Updates a blog by changing the its title, body, adding tags, adding a subcategory. (Assuming tag and subcategory received in body is need to be added)
-// Updates a blog by changing its publish status i.e. adds publishedAt date and set published to true
+// Updates a blog by changing its publish status i.e. adds publishedAt date and set published to true                                 
 // Check if the blogId exists (must have isDeleted false). If it doesn't, return an HTTP status 404 with a response body like this
 // Return an HTTP status 200 if updated successfully with a body like this
 // Also make sure in the response you return the updated blog document.
@@ -158,7 +159,7 @@ const updateBlogs = async (req, res) => {
             let data = req.body
             let date = moment().format()
 
-            const { title, body, category, tags, subcategory } = data
+            const { title, body, category, tags, subcategory,isPublished } = data
 
             let blogId = req.params.blogId
             let dbdata = await BlogModel.findById({ _id: blogId })
@@ -174,14 +175,17 @@ const updateBlogs = async (req, res) => {
                         .send({ status: false, msg: "Body should not be Empty.. " })
             }
 
-            let blog = await BlogModel.findOneAndUpdate({ _id: blogId },// isDeleted: false 
+            let blog = await BlogModel.findOneAndUpdate({ _id: blogId, isDeleted: false },// isDeleted: false  
                   {
-                        $set: { isPublished: true, body: body, title: title, publishedAt: date },
-                        $push: { tags: tags, subcategory: subcategory }
+                        $set: { isPublished:isPublished, body: body, title: title, publishedAt: date },
+                        $push: { category:category,tags: tags, subcategory: subcategory }
                   },
                   { new: true })
+            if (!blog) {
+                  return res.status(200).send({ status: false, msg:"already deleted" })
+            }
+            return res.status(200).send({ status: true, msg: blog })
 
-            res.status(200).send({ status: true, msg: blog })
 
       } catch (err) {
             res.status(500).send({ status: false, error: err.message })
@@ -213,7 +217,7 @@ const deleteBlogs1 = async function (req, res) {
 
       }
       catch (err) {
-            res.status(400).send({ status: false, error: err.message })
+            return res.status(400).send({ status: false, error: err.message })
       }
 }
 
@@ -225,64 +229,67 @@ const deleteBlogs1 = async function (req, res) {
 
 const deleteBlogs2 = async (req, res) => {
       try {
-            let loggedUserId=req.headers["loggedUserId"]
+            let loggedUserId = req.headers["loggedUserId"]
             const { category, authorId, tags, subcategory, isPublished } = req.query;
             if (category) {
-                let deletedData = await BlogModel.updateMany({ category: category, isDeleted: false,authorId:loggedUserId }, { isDeleted: true });
-                if (deletedData.modifiedCount != 0) {
-                    return res.status(200).send({ status: true, msg: "deleted successfully" })
-                }
+                  let deletedData = await BlogModel.updateMany({ category: category, isDeleted: false, isPublished: false, authorId: loggedUserId }, { isDeleted: true, deletedAt: Date.now() });
+                  if (deletedData.modifiedCount != 0) {
+                        return res.status(200).send({ status: true, msg: "deleted successfully" })
+                  }
             }
             if (authorId) {
-                if (!ObjectId.isValid(authorId)) {
-                    return res.status(400).send({ status: false, msg: "invalid author id" })
-                }
-                let deletedData = await BlogModel.updateMany({ authorId: authorId, isDeleted: false, }, { isDeleted: true });
-                if (deletedData.modifiedCount != 0) {
-                    return res.status(200).send({ status: true, msg: "deleted successfully" })
-                }
+                  if (!ObjectId.isValid(authorId)) {
+                        return res.status(400).send({ status: false, msg: "invalid author id" })
+                  }
+                  let deletedData = await BlogModel.updateMany({ authorId: authorId, isDeleted: false, isPublished: false, }, { isDeleted: true, deletedAt: Date.now() });
+                  if (deletedData.modifiedCount != 0) {
+                        return res.status(200).send({ status: true, msg: "deleted successfully" })
+                  }
             }
             if (tags) {
-                let findedData = await BlogModel.find({ isDeleted: false });
-                let filteredData = findedData.filter((doc) => {
-                    let alltag = doc.tags;
-                    return alltag.find(tag => tag == tags)
-                })
-                let idArr = [];
-                filteredData.forEach(doc => {
-                    idArr.push(doc._id)
-                })
-                let deletedData = await BlogModel.updateMany({ _id: { $in: idArr },authorId:loggedUserId }, { isDeleted: true })
-                if (deletedData.modifiedCount != 0) {
-                    return res.status(200).send({ status: true, msg: "deleted successfully" })
-                }
+                  let findedData = await BlogModel.find({ isDeleted: false });
+                  let filteredData = findedData.filter((doc) => {
+                        let alltag = doc.tags;
+                        return alltag.find(tag => tag == tags)
+                  })
+                  let idArr = [];
+                  filteredData.forEach(doc => {
+                        idArr.push(doc._id)
+                  })
+                  let deletedData = await BlogModel.updateMany({ _id: { $in: idArr }, authorId: loggedUserId, isPublished: false }, { isDeleted: true, deletedAt: Date.now() })
+                  if (deletedData.modifiedCount != 0) {
+                        return res.status(200).send({ status: true, msg: "deleted successfully" })
+                  }
             }
             if (subcategory) {
-                let findedData = await BlogModel.find({ isDeleted: false });
-                let filteredData = findedData.filter((doc) => {
-                    let alltag = doc.subcategory;
-                    return alltag.find(subcat => subcat == subcategory)
-                })
-                let idArr = [];
-                filteredData.forEach(doc => {
-                    idArr.push(doc._id)
-                })
-                let deletedData = await BlogModel.updateMany({ _id: { $in: idArr },authorId:loggedUserId}, { isDeleted: true })
-                if (deletedData.modifiedCount != 0) {
-                    return res.status(200).send({ status: true, msg: "deleted successfully" })
-                }
+                  let findedData = await BlogModel.find({ isDeleted: false });
+                  let filteredData = findedData.filter((doc) => {
+                        let alltag = doc.subcategory;
+                        return alltag.find(subcat => subcat == subcategory)
+                  })
+                  let idArr = [];
+                  filteredData.forEach(doc => {
+                        idArr.push(doc._id)
+                  })
+                  let deletedData = await BlogModel.updateMany({ _id: { $in: idArr }, authorId: loggedUserId, isPublished: false }, { isDeleted: true, deletedAt: Date.now() })
+                  if (deletedData.modifiedCount != 0) {
+                        return res.status(200).send({ status: true, msg: "deleted successfully" })
+                  }
             }
             if (isPublished) {
-                let deletedData = await BlogModel.updateMany({ isPublished: isPublished, isDeleted: false,authorId:loggedUserId}, { isDeleted: true });
-                if (deletedData.modifiedCount != 0) {
-                    return res.status(200).send({ status: true, msg: "deleted successfully" })
-                }
+                  if (req.query.isPublished == "true") {
+                        return res.status(400).send({ status: false, msg: "Document published is not deleted" })
+                  }
+                  let deletedData = await BlogModel.updateMany({ isPublished: isPublished, isDeleted: false, authorId: loggedUserId }, { isDeleted: true, deletedAt: Date.now() });
+                  if (deletedData.modifiedCount != 0) {
+                        return res.status(200).send({ status: true, msg: "deleted successfully" })
+                  }
             }
             return res.status(404).send({ status: false, msg: "no data is found to be deleted" })
-        }
-        catch(err){
-            res.status(500).send({status:false,msg:err.message})
-        }
+      }
+      catch (err) {
+            res.status(500).send({ status: false, msg: err.message })
+      }
 
 }
 

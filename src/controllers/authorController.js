@@ -84,34 +84,35 @@ const login = async function(req,res){
 try{
 
 
-      let userId = req.body.email
+      let username = req.body.email
       let password = req.body.password
 
       if (Object.keys(req.body).length == 0) {
             return res.status(400).send({ status: false, msg: "emailId or Password is required" })
       }
 
-      if(!userId){
-         return res.send({msg:"userId Must Be Present"})
+      if(!username){
+         return res.status(400).send({msg:"username Must Be Present"})
      }
 
       if(!password){
-      return res.send({msg:"Password Must Be Present"})
+      return res.status(400).send({msg:"Password Must Be Present"})
      }
  
-      let checkUser = await AuthorModel.findOne({email:userId,password:password})
+      let checkUser = await AuthorModel.findOne({email:username,password:password})
       if(!checkUser){
-            res.status(404).send({status:false,error:"User Not Found"})
+          return res.status(401).send({status:false,error:"User Not Found"})
       }
-       let token = jwt.sign({userId:checkUser._id.toString()},"functionup")
+       let token = jwt.sign({username:checkUser._id.toString()},"functionup")
       
        res.status(200).send({status:true,msg:token})     
       }
       catch(err){
-            res.status(404).send({status:false,err:err.message})
+            res.status(404).send({status:false,error :err.message})
       }
 }
  
 
 module.exports.login = login
 module.exports.authors = authors
+  
