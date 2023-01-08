@@ -9,16 +9,16 @@ router.post("/authors", AuthorController.authors) //create author
 
 router.post("/blogs",Middleware.authentication, BlogController.createBlogs)  //create blog
 
-router.get("/Blogs",Middleware.authentication, BlogController.getBlogs)
+router.get("/blogs",Middleware.authentication, BlogController.getBlogs) //get blog
 
-router.put("/Blogs/:blogId",Middleware.authentication, BlogController.updateBlogs)
+router.put("/blogs/:blogId",Middleware.authentication, BlogController.updateBlogs)  //update blog
 
-router.delete("/Blogs/:blogId",Middleware.authentication,   BlogController.deleteBlog)
+router.delete("/blogs/:blogId",Middleware.authentication,   BlogController.deleteBlog)  //delete blog by Id
 
-router.delete("/Blogs",Middleware.authentication,   BlogController.deleteBlog2)
+router.delete("/blogs",Middleware.authentication,   BlogController.deleteBlog2)  // delete blog by query
 
 
-router.post("/login",AuthorController.login)
+router.post("/login",AuthorController.login)   //author login
 
 
 

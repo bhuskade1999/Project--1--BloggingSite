@@ -190,17 +190,20 @@ const deleteBlogs1 = async function (req, res) {
       try {
 
             let blogId = req.params.blogId
+            if (!ObjectId.isValid(blogId)) {
+                  return res.status(400).send({ status: false, msg: "invalid Blog id" })
+            }
             let blog = await BlogModel.findById({ _id: blogId, isDeleted: false, deletedAt: false })
             if (!blog) {
                   return res.status(404).send({ status: false, error: "No such blog exists" })
             }
 
-            if (blog.isDeleted == true) {
-                  return res.status(400).send({ status: false, error: "document already deleted" })
-            }
-
             if(blog.authorId !== req.authorId){
                   res.status(401).send({status:false ,msg :"you are not authorised"})
+            }
+
+            if (blog.isDeleted == true) {
+                  return res.status(400).send({ status: false, error: "document already deleted" })
             }
 
 
