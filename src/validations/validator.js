@@ -1,7 +1,7 @@
 
 
 const isValid = (value) => {
-      if (typeof value === "undefined" || value === null) {
+      if (typeof value === "undefined" || value === null || value === "") {
             return false
       }
       if (typeof value === "string" && value.trim().length > 0) {
@@ -9,11 +9,36 @@ const isValid = (value) => {
       }
 }
 
+ //string validation
+const isValidName = (value)=> {
+      const nameRegex = /^[a-zA-Z]{1,20}$/
+      return nameRegex.test(value)
+
+}
+
+  //email validation
 const isValidEmail = (value) => { //Sanhilrai143@gmail.com.org
-      const emailRegex = /^[A-Za-z0-9._]{3,}@[A-Za-z]{3,}[.]{1,}[A-Za-z.]{2,8}$/
+      const emailRegex = /^[a-z]{1}[a-z0-9]{1,50}@[1}[a-z]{2,20}[.]{1}[a-z.]{2,10}$/
       return emailRegex.test(value)
 }
+
+
+
+
+ //password validation
+const isValidPassword = (value) => {
+      const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/  
+      return passRegex.test(value)
+}
+
+
+
+
+
+//regix property
+
 //   (/^
+
 // (?=.*\d)                //should contain at least one digit
 // (?=.*[a-z])             //should contain at least one lower case
 // (?=.*[A-Z])             //should contain at least one upper case
@@ -22,11 +47,9 @@ const isValidEmail = (value) => { //Sanhilrai143@gmail.com.org
 // $/)
 
 
-const isValidPassword = (value) => {
-      const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/
-      return passRegex.test(value)
-}
 
 
-module.exports = {isValidEmail, isValidPassword , isValid}
+
+
+module.exports = { isValidName, isValidEmail, isValidPassword , isValid }
 

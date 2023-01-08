@@ -18,54 +18,48 @@ const authors = async (req, res) => {
             }
             //using destructure
 
-            const { fName, lName, title, email, password } = data
+            const { fname, lname, title, email, password } = data
 
-            if (!Validation.isValid(fName)) {
+            if (!Validation.isValid(fname)) {
                   return res.status(400).send({ status: false, msg: "first name is required" })
             }
 
-            if (!Validation.isValid(lName)) {
-                  return res
-                        .status(400)
-                        .send({ status: false, msg: "last name is required" })
+            if ( !Validation.isValidName(fname)) {
+                  return res.status(400).send({ status: false, msg: "first name is  Incorrect" })
+            }
+
+            if (!Validation.isValid(lname) ) {
+                  return res.status(400).send({ status: false, msg: "last name is required" })
+            }
+
+            if ( !Validation.isValidName(lname)) {
+                  return res.status(400).send({ status: false, msg: "last name is  Incorrect" })
             }
 
             if (!Validation.isValid(title)) {
-                  return res
-                        .status(400)
-                        .send({ status: false, msg: "title is required" })
+                  return res.status(400).send({ status: false, msg: "title is required" })
             }
             if (!["Mr", "Mrs", "Miss"].includes(title)) {
-                  return res
-                        .status(400)
-                        .send({ status: false, msg: "title should contains Mr, Mrs, Miss" })
+                  return res.status(400).send({ status: false, msg: "title should contains Mr, Mrs, Miss" })
             }
             if (!email) {
-                  return res
-                        .status(400)
-                        .send({ status: false, msg: "email is required" })
+                  return res.status(400).send({ status: false, msg: "email is required" })
             }
             if (!Validation.isValidEmail(email)) {
-                  return res
-                        .status(400)
-                        .send({ status: false, msg: "invalid email address" })
+                  return res.status(400).send({ status: false, msg: "invalid email address" })
             }
             const emailUnique = await AuthorModel.findOne({ email: data.email })
+
             if (emailUnique) {
-                  return res
-                        .status(400)
-                        .send({ status: false, msg: "email is already exist" })
+                  return res.status(400).send({ status: false, msg: "email is already exist" })
             }
+
             if (!password) {
-                  return res
-                        .status(400)
-                        .send({ status: false, msg: "password is required" })
+                  return res.status(400).send({ status: false, msg: "password is required" })
             }
             //password case sensitive
             if(!Validation.isValidPassword(password)) {
-                  return res
-                  .status(400)
-                  .send({ msg: "Minimum eight characters, at least one uppercase, one lowercase, one special character and one number" })
+                  return res.status(400).send({ status:false, msg :"Password Requirement failed : Minimum eight characters, at least one uppercase, one lowercase, one special character and one number" })
             }
 
             let savedData = await AuthorModel.create(data)
@@ -82,36 +76,38 @@ const authors = async (req, res) => {
 
 const login = async function(req,res){
 try{
-
-
-      let username = req.body.email
+      let email = req.body.email
       let password = req.body.password
 
       if (Object.keys(req.body).length == 0) {
             return res.status(400).send({ status: false, msg: "emailId or Password is required" })
       }
 
-      if(!username){
+      if(!email){
          return res.status(400).send({msg:"username Must Be Present"})
      }
 
-      if(!password){
+      if(!password ){
       return res.status(400).send({msg:"Password Must Be Present"})
      }
  
-      let checkUser = await AuthorModel.findOne({email:username,password:password})
+      let checkUser = await AuthorModel.findOne({email:email,password:password})
       if(!checkUser){
           return res.status(401).send({status:false,error:"User Not Found"})
       }
        let token = jwt.sign({username:checkUser._id.toString()},"functionup")
+
+      res.setHeader("x-api-key",token);
       
-       res.status(200).send({status:true,msg:token})     
+       res.status(200).send({status: true, msg:token})     
       }
       catch(err){
-            res.status(404).send({status:false,error :err.message})
+            res.status(500).send({status:false, error :err.message})
       }
 }
  
+
+
 
 module.exports.login = login
 module.exports.authors = authors
