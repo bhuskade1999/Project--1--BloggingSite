@@ -253,11 +253,22 @@ const deleteBlogs2 = async (req, res) => {
                   if (req.query.isPublished == "true") {
                         return res.status(400).send({ status: false, msg: "Document published is not deleted" })
                   }else{
-                        filterData.isPublished =isPublished
+                        filterData.isPublished = isPublished
                   }
                    
             }
-            return res.status(404).send({ status: false, msg: "no data is found to be deleted" })
+            let blogdata = await BlogModel.findOne({filterData})
+            if(!blogdata){
+                  return res.status(404).send({ status: false, msg: "no data is found to be deleted" })
+                  }
+
+            if (data.authorId._id !== req.authorId){
+                  res.status(401).send({status:false ,msg :"you are not authorised"})
+            }
+
+
+            let updateData = await BlogModel.updateOne(filterData,{isDeleted:true},{new:true})
+            return res.status(200).send({status:true ,msg:"Blog Deleted Successfully", data: updateData})
       }
       catch (err) {
             res.status(500).send({ status: false, msg: err.message })
