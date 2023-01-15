@@ -227,14 +227,14 @@ const deleteBlogs1 = async function (req, res) {
 const deleteBlogs2 = async (req, res) => {
       try {
         
-        let filterData= {isDeleted:false ,authorId:req.authorId}
+        let filterData= {isDeleted: false ,isPublished:false, authorId:req.authorId}
             const { category, authorId, tags, subcategory, isPublished } = req.query;
 
             if (category) {
                    filterData.category = category            
             }
             if (authorId) {
-                  if (!ObjectId.isValid(authorId)) {
+                  if (!mongoose.isValidObjectId(authorId)) {
                         return res.status(400).send({ status: false, msg: "invalid author id" })
                   }else{
                         filterData.authorId = authorId
@@ -251,27 +251,29 @@ const deleteBlogs2 = async (req, res) => {
 
             if (isPublished) {
                   if (req.query.isPublished == "true") {
-                        return res.status(400).send({ status: false, msg: "Document published is not deleted" })
+                        return res.status(400).send({ status: false, msg: "published Blog Can not be deleted  deleted" })
                   }else{
                         filterData.isPublished = isPublished
                   }
                    
             }
-            let blogdata = await BlogModel.findOne({filterData})
+            let blogdata = await BlogModel.findOne(filterData)
             if(!blogdata){
                   return res.status(404).send({ status: false, msg: "no data is found to be deleted" })
                   }
+                 
+                let authorsId = blogdata.authorId.toString()
 
-            if (data.authorId._id !== req.authorId){
-                  res.status(401).send({status:false ,msg :"you are not authorised"})
+            if ( authorsId !== req.authorId){
+                   return res.status(401).send({status:false ,msg :"you are not authorised"})
             }
 
 
-            let updateData = await BlogModel.updateOne(filterData,{isDeleted:true},{new:true})
+            let updateData = await BlogModel.updateMany(filterData,{$set:{isDeleted:true}},{new:true})
             return res.status(200).send({status:true ,msg:"Blog Deleted Successfully", data: updateData})
       }
       catch (err) {
-            res.status(500).send({ status: false, msg: err.message })
+           return res.status(500).send({ status: false, error: err.message })
       }
 
 }

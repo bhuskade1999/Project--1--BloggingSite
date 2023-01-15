@@ -15,7 +15,7 @@ router.put("/blogs/:blogId",Middleware.authentication, BlogController.updateBlog
 
 router.delete("/blogs/:blogId",Middleware.authentication,   BlogController.deleteBlog)  //delete blog by Id
 
-router.delete("/blogs",Middleware.authentication,   BlogController.deleteBlog2)  // delete blog by query
+router.delete("/blog",Middleware.authentication,  BlogController.deleteBlog2)  // delete blog by query
 
 
 router.post("/login",AuthorController.login)   //author login

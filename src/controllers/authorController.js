@@ -20,7 +20,7 @@ const authors = async (req, res) => {
 
             const { fname, lname, title, email, password } = data
 
-            if (!Validation.isValid(fname)) {
+            if (!fname) {
                   return res.status(400).send({ status: false, msg: "first name is required" })
             }
 
@@ -28,7 +28,7 @@ const authors = async (req, res) => {
                   return res.status(400).send({ status: false, msg: "first name is  Incorrect" })
             }
 
-            if (!Validation.isValid(lname) ) {
+            if (!lname) {
                   return res.status(400).send({ status: false, msg: "last name is required" })
             }
 
