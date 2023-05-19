@@ -1,8 +1,15 @@
-# Blogging-Site-Pro
+# Blogging-Site
 
-# Californium
+ ## This project contain backend code of Blogging Site, where student can create account, create blog, review blog, and many other functinality  which makes experience better. 
 
-Repository for backend cohort - Californium
+### Teck Stack :
+ - NodeJs
+ - Express
+ - Mongodb
+ 
+ ##
+
+ 
 
 ## Blogging Site Mini Project Requirement
 
