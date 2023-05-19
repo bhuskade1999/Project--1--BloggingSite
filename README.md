@@ -1,6 +1,6 @@
 # Blogging-Site
 
- ## This project contain backend code of Blogging Site, where user can create account, create blog, update blog, and many other functinality  which makes experience better. 
+ ### This project contain backend code of Blogging Site, where user can create account, create blog, update blog, and many other functinality  which makes experience better. 
 
 ### Teck Stack :
  - NodeJs
@@ -11,7 +11,7 @@
 
  
 
-## Project Requirement
+## Project Requirement :-
 
 ## Phase I
 
