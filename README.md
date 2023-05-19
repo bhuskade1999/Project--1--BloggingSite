@@ -11,7 +11,7 @@
 
  
 
-## Blogging Site Mini Project Requirement
+## Project Requirement
 
 ## Phase I
 
